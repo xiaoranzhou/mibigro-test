@@ -1,0 +1,67 @@
+import { createTable } from './ui.js';
+
+export function renderMediaTable(element, media) {
+  const headers = [
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    { key: 'source', label: 'Source' },
+    { key: 'ph', label: 'pH' },
+    { key: 'complex', label: 'Complex' },
+  ];
+
+  const rows = media.map(m => ({
+    id: m.id,
+    name: `<a href="#/media/${m.canonId}">${m.name}</a>`,
+    source: m.source,
+    ph: formatPh(m.min_pH, m.max_pH),
+    complex: m.complex_medium ? 'Yes' : 'No',
+  }));
+
+  const table = createTable(headers, rows);
+  element.appendChild(table);
+}
+
+export function renderCompositionView(element, medium, composition) {
+  const { name, id, source, min_pH, max_pH, link } = medium;
+
+  let html = `
+    <h2>${name}</h2>
+    <p><strong>ID:</strong> ${id}</p>
+    <p><strong>Source:</strong> ${source}</p>
+    <p><strong>pH:</strong> ${formatPh(min_pH, max_pH)}</p>
+  `;
+
+  if (link) {
+    html += `<p><a href="${link}" target="_blank" rel="noopener noreferrer">External Link</a></p>`;
+  }
+
+  if (composition) {
+    const headers = [
+      { key: 'name', label: 'Ingredient' },
+      { key: 'g_l', label: 'g/L' },
+      { key: 'mmol_l', label: 'mmol/L' },
+      { key: 'optional', label: 'Optional' },
+    ];
+    const rows = composition.map(c => ({
+      ...c,
+      optional: c.optional ? 'Yes' : 'No',
+    }));
+    const table = createTable(headers, rows);
+    element.innerHTML = html;
+    element.appendChild(table);
+  } else {
+    html += '<div class="alert alert-warning">No composition data found for this medium.</div>';
+    element.innerHTML = html;
+  }
+}
+
+export function renderError(message) {
+  const element = document.getElementById('app-root');
+  element.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+}
+
+function formatPh(min, max) {
+  if (min === null && max === null) return '';
+  if (min === max) return min;
+  return `${min}–${max}`;
+}
