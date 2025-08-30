@@ -7,9 +7,9 @@
 }
 
 body{ font-family: "Roboto","Helvetica","Arial",sans-serif; }
-.navbar, .sidebar { background: var(--brand-navy); }
+.navbar, .sidebar { background: var(--brand-orange); }
 .navbar .navbar-brand, .navbar .nav-link, .sidebar .nav-link { color: var(--brand-white); }
-.btn-primary, .badge-primary { background: var(--brand-orange); border-color: var(--brand-orange); color:#000; }
+.btn-primary, .badge-primary { background: var(--brand-navy); border-color: var(--brand-navy); color:var(--brand-white); }
 .table-hover tbody tr:hover { background: color-mix(in oklab, var(--brand-ltblue) 20%, white); }
-a { color: var(--brand-navy); }
-a:hover { color: var(--brand-orange); }
+a { color: var(--brand-orange); }
+a:hover { color: var(--brand-navy); }
