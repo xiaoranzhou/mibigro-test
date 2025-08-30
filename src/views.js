@@ -1,12 +1,15 @@
-import { createTable } from './ui.js';
+
+import { createTable, applyFilter } from './ui.js';
+
+let filters = {};
 
 export function renderMediaTable(element, media) {
   const headers = [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'source', label: 'Source' },
-    { key: 'ph', label: 'pH' },
-    { key: 'complex', label: 'Complex' },
+    { key: 'id', label: 'ID', searchable: true },
+    { key: 'name', label: 'Name', searchable: true },
+    { key: 'source', label: 'Source', searchable: true },
+    { key: 'ph', label: 'pH', searchable: false },
+    { key: 'complex', label: 'Complex', searchable: false },
   ];
 
   const rows = media.map(m => ({
@@ -17,7 +20,11 @@ export function renderMediaTable(element, media) {
     complex: m.complex_medium ? 'Yes' : 'No',
   }));
 
-  const table = createTable(headers, rows);
+  const table = createTable(headers, rows, (key, value) => {
+    filters[key] = value;
+    applyFilter(table, filters, headers);
+  });
+
   element.appendChild(table);
 }
 
