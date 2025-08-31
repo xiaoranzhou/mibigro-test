@@ -1,3 +1,4 @@
+
 import { createTable, applyFilter } from './ui.js';
 import { getIngredientByName } from './state.js';
 
@@ -102,7 +103,7 @@ export function renderIngredientsTable(element, ingredients) {
 
   const rows = ingredients.map(i => ({
     id: i.id,
-    name: i.name,
+    name: `<a href="#" data-bs-toggle="modal" data-bs-target="#ingredientModal" data-ingredient='${JSON.stringify(i)}'>${i.name}</a>`,
     'CAS-RN': i['CAS-RN'],
     formula: i.formula,
     mass: i.mass,

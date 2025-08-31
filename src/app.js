@@ -1,4 +1,5 @@
-import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients } from './state.js';
+
+import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients, getIngredientDetails } from './state.js';
 import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable } from './views.js';
 
 const appRoot = document.getElementById('app-root');
@@ -62,17 +63,22 @@ async function init() {
   ingredientModal.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
     const ingredient = JSON.parse(button.getAttribute('data-ingredient'));
+    const ingredientDetails = getIngredientDetails(ingredient.id);
+
     const modalTitle = ingredientModal.querySelector('.modal-title');
     const modalBody = ingredientModal.querySelector('.modal-body');
     modalTitle.textContent = ingredient.name;
 
     let tableHtml = '<table class="table">';
-    for (const key in ingredient) {
-        let value = ingredient[key];
+    const details = ingredientDetails || ingredient;
+    for (const key in details) {
+        let value = details[key];
         if (key === 'ChEBI' && value) {
             value = `<a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:${value}" target="_blank">${value}</a>`;
         } else if (key === 'PubChem' && value) {
             value = `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${value}" target="_blank">${value}</a>`;
+        } else if (Array.isArray(value)) {
+            value = value.join(', ');
         }
         tableHtml += `<tr><th scope="row">${key}</th><td>${value !== null ? value : ''}</td></tr>`;
     }
