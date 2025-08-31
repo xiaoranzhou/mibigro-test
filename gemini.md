@@ -54,10 +54,10 @@ Interactions:
 
 ### B) Composition (`#/media/:id`)
 
-* Show medium header in a table: Name, ID, Source, pH, external PDF link if present.
-* **Related Strains** table is displayed if there are any.
+* Show medium header: Name, ID, Source, pH, external PDF link if present.
+* **Show Strains** button to open a modal with strain information.
 * **Ingredients table** with columns: Ingredient, g/L, mmol/L, Optional.
-* Ingredient names are linked to the ingredient's detail page (`#/ingredients/:id`).
+* Ingredient names are linked to a modal with detailed information.
 * If missing composition: show an alert explaining “No composition data found for this medium”.
 * If this medium is an **alias** (due to duplicate description), show a notice: “This entry duplicates **<canonical name>**; redirecting link in list view.”
 * Optionally list **related media** sharing the same description.
@@ -71,7 +71,7 @@ Interactions:
 
 * Columns: ID, Name, CAS-RN, Formula, Mass.
 * Each searchable column has a search input.
-* Ingredient names are linked to the ingredient's detail page (`#/ingredients/:id`).
+* Ingredient names are linked to a modal with detailed information.
 
 ### E) Strains table (`#/strains`)
 
@@ -115,46 +115,3 @@ Interactions:
 [1]: https://getbootstrap.com/docs/5.3/examples/dashboard/ "Dashboard Template · Bootstrap v5.3"
 [2]: https://www.sfb1535.de/ "MibiNet DB"
 [3]: https://www.color-hex.com/color-palette/107002?utm_source=chatgpt.com "SFB Color Palette"
-
----
-
-## 5) Future Development Plan
-
-This section outlines the plan to evolve the prototype into a full-featured, secure data management application.
-
-### Phase 1: Backend Foundation (FastAPI & PostgreSQL)
-1.  **Project Scaffolding:** Set up a new `backend` directory for a FastAPI application.
-2.  **Database Schema:** Design and create the PostgreSQL database schema for all data, including a `users` table and a `published` flag for media.
-3.  **Authentication & Authorization:** Implement JWT-based user authentication to secure data modification endpoints.
-4.  **Core API Endpoints:** Develop public (read-only, published data) and admin (read/write) API endpoints for media, ingredients, and solutions.
-
-### Phase 2: Straightforward Frontend UI for Data Stewards
-1.  **Login Page:** Create a simple login page.
-2.  **Admin Dashboard:** A secure section (`#/admin`) for data management, showing all data (drafts and published) with edit/publish/delete controls.
-3.  **Unified "Add/Edit" Interface:** A single, intuitive UI for adding and editing all data types.
-
-### Phase 3: Full Integration
-1.  **Connect Frontend to Backend:** Update the frontend to fetch all data from the backend API.
-2.  **Authenticated Operations:** The admin UI will send the authentication token with all secure requests.
-
----
-
-## 6) Changelog
-
-### 2025-08-31
-*   **Medium Composition View (`/media/:id`):**
-    *   The medium's descriptive information (ID, Source, pH) is now displayed in a table for better readability.
-    *   Fixed a bug where the composition table was being overwritten by the "Related Strains" table.
-    *   The "Related Strains" are now displayed in a table directly on the page instead of in a modal.
-    *   Ingredient names in the composition table now link to their respective detail pages (`#/ingredients/:id`) instead of a modal.
-*   **Ingredients List View (`/ingredients`):**
-    *   Ingredient names in the main list now also link to their detail pages, consistent with the composition view.gelog
-
-### 2025-08-31
-*   **Medium Composition View (`/media/:id`):**
-    *   The medium's descriptive information (ID, Source, pH) is now displayed in a table for better readability.
-    *   Fixed a bug where the composition table was being overwritten by the "Related Strains" table.
-    *   The "Related Strains" are now displayed in a table directly on the page instead of in a modal.
-    *   Ingredient names in the composition table now link to their respective detail pages (`#/ingredients/:id`) instead of a modal.
-*   **Ingredients List View (`/ingredients`):**
-    *   Ingredient names in the main list now also link to their detail pages, consistent with the composition view.

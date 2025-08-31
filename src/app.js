@@ -1,5 +1,5 @@
 import { loadData, getMedia, getMedium, getComposition, getSolutions, getSolution, getSolutionComposition, getIngredients, getIngredient, getIngredientDetails, getStrainsForMedium, getAllStrains, getMediaForStrain } from './state.js';
-import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable, renderSolutionCompositionView, renderSolutionJsonView, renderIngredientDetailView, renderStrainsTable, renderStrainDetailView, renderAddMediaView } from './views.js';
+import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable, renderSolutionCompositionView, renderSolutionJsonView, renderIngredientDetailView, renderStrainsTable, renderStrainDetailView } from './views.js';
 
 const appRoot = document.getElementById('app-root');
 const loadingOverlay = document.getElementById('loading-overlay');
@@ -112,8 +112,5 @@ async function init() {
   hideLoading();
 }
 
-init();ner('hashchange', router);
-  hideLoading();
-}
 
 init();

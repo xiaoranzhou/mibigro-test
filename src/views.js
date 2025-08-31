@@ -1,5 +1,5 @@
 import { createTable, applyFilter } from './ui.js';
-import { getIngredientByName, getStrainsForMedium, getMediaForStrain, getMedium, getSolutions, getIngredients, getSolutionComposition } from './state.js';
+import { getIngredientByName, getStrainsForMedium, getMediaForStrain, getMedium } from './state.js';
 
 let filters = {};
 
@@ -302,9 +302,32 @@ export function renderSolutionCompositionView(element, solution, composition) {
   }
 }
 
+export function renderSolutionJsonView(element, solution, composition) {
+  const { name, id } = solution;
+
+  let html = `
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">${name} - JSON</h1>
+    </div>
+    <p><a href="#/solutions/${id}">Back to Composition</a></p>
+  `;
+
+  if (composition && composition.recipe) {
+    const headers = Object.keys(composition.recipe[0] || {});
+    const table = createTable(headers, composition.recipe);
+    element.innerHTML = html;
+    element.appendChild(table);
+  } else {
+    html += '<div class="alert alert-warning">No composition data found for this solution.</div>';
+    element.innerHTML = html;
+  }
+}
+
+/*
 export function renderAddMediaView(element) {
-  const solutions = getSolutions();
-  const ingredients = getIngredients();
+  console.log('Rendering Add Media view');
+  const solutions = getSolutions() || [];
+  const ingredients = getIngredients() || [];
 
   const html = `
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -417,3 +440,4 @@ export function renderAddMediaView(element) {
     }
   });
 }
+*/
