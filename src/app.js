@@ -1,3 +1,4 @@
+
 import { loadData, getMedia, getMedium, getComposition } from './state.js';
 import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks } from './views.js';
 
@@ -59,7 +60,20 @@ async function init() {
     const modalTitle = ingredientModal.querySelector('.modal-title');
     const modalBody = ingredientModal.querySelector('.modal-body');
     modalTitle.textContent = ingredient.name;
-    modalBody.innerHTML = `<pre>${JSON.stringify(ingredient, null, 2)}</pre>`;
+
+    let tableHtml = '<table class="table">';
+    for (const key in ingredient) {
+        let value = ingredient[key];
+        if (key === 'ChEBI' && value) {
+            value = `<a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:${value}" target="_blank">${value}</a>`;
+        } else if (key === 'PubChem' && value) {
+            value = `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${value}" target="_blank">${value}</a>`;
+        }
+        tableHtml += `<tr><th scope="row">${key}</th><td>${value !== null ? value : ''}</td></tr>`;
+    }
+    tableHtml += '</table>';
+
+    modalBody.innerHTML = tableHtml;
   });
 }
 
