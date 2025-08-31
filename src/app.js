@@ -1,6 +1,5 @@
-
-import { loadData, getMedia, getMedium, getComposition } from './state.js';
-import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks } from './views.js';
+import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients } from './state.js';
+import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable } from './views.js';
 
 const appRoot = document.getElementById('app-root');
 
@@ -37,6 +36,12 @@ async function router() {
         renderMediaTable(appRoot, getMedia());
       }
       break;
+    case 'solutions':
+        renderSolutionsTable(appRoot, getSolutions());
+        break;
+    case 'ingredients':
+        renderIngredientsTable(appRoot, getIngredients());
+        break;
     case 'about':
         renderAbout(appRoot);
         break;

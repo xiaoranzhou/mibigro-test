@@ -1,4 +1,3 @@
-
 import { createTable, applyFilter } from './ui.js';
 import { getIngredientByName } from './state.js';
 
@@ -69,6 +68,52 @@ export function renderCompositionView(element, medium, composition) {
     html += '<div class="alert alert-warning">No composition data found for this medium.</div>';
     element.innerHTML = html;
   }
+}
+
+export function renderSolutionsTable(element, solutions) {
+  const headers = [
+    { key: 'id', label: 'ID', searchable: true },
+    { key: 'name', label: 'Name', searchable: true },
+    { key: 'volume', label: 'Volume', searchable: false },
+  ];
+
+  const rows = solutions.map(s => ({
+    id: s.id,
+    name: s.name,
+    volume: s.volume,
+  }));
+
+  const table = createTable(headers, rows, (key, value) => {
+    filters[key] = value;
+    applyFilter(table, filters, headers);
+  });
+
+  element.appendChild(table);
+}
+
+export function renderIngredientsTable(element, ingredients) {
+  const headers = [
+    { key: 'id', label: 'ID', searchable: true },
+    { key: 'name', label: 'Name', searchable: true },
+    { key: 'CAS-RN', label: 'CAS-RN', searchable: true },
+    { key: 'formula', label: 'Formula', searchable: true },
+    { key: 'mass', label: 'Mass', searchable: false },
+  ];
+
+  const rows = ingredients.map(i => ({
+    id: i.id,
+    name: i.name,
+    'CAS-RN': i['CAS-RN'],
+    formula: i.formula,
+    mass: i.mass,
+  }));
+
+  const table = createTable(headers, rows, (key, value) => {
+    filters[key] = value;
+    applyFilter(table, filters, headers);
+  });
+
+  element.appendChild(table);
 }
 
 export function renderError(message) {
