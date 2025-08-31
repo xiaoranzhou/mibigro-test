@@ -1,29 +1,35 @@
-import { renderMediaTable, renderCompositionView, renderError } from './views.js';
+
+import { renderError } from './views.js';
 
 const state = {
   media: [],
   composition: {},
   solutions: [],
+  ingredients: [],
   canonMap: new Map(),
+  ingredientsByName: new Map(),
 };
 
 async function loadData() {
   try {
-    const [mediaRes, compositionRes, solutionsRes] = await Promise.all([
+    const [mediaRes, compositionRes, solutionsRes, ingredientsRes] = await Promise.all([
       fetch('../public/data/mediaList.json'),
       fetch('../public/data/medium-Composition.json'),
       fetch('../public/data/solutions.json'),
+      fetch('../public/data/ingredients.json'),
     ]);
 
-    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok) {
+    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok) {
       throw new Error('Failed to load data');
     }
 
     state.media = await mediaRes.json();
     state.composition = await compositionRes.json();
     state.solutions = await solutionsRes.json();
+    state.ingredients = await ingredientsRes.json();
 
     buildCanonMap();
+    buildIngredientsMap();
   } catch (error) {
     renderError(error.message);
   }
@@ -42,6 +48,12 @@ function buildCanonMap() {
   }
 }
 
+function buildIngredientsMap() {
+    for (const ingredient of state.ingredients) {
+        state.ingredientsByName.set(ingredient.name.toLowerCase(), ingredient);
+    }
+}
+
 export function getMedia() {
   return state.media.map(m => ({
     ...m,
@@ -55,6 +67,10 @@ export function getMedium(id) {
 
 export function getComposition(id) {
   return state.composition[id];
+}
+
+export function getIngredientByName(name) {
+    return state.ingredientsByName.get(name.toLowerCase());
 }
 
 export { loadData };

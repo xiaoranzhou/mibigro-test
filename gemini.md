@@ -1,4 +1,4 @@
-# claude.md — Build Spec for “Mediadive Clone” (Vanilla JS + Bootstrap 5.3)
+# gemini.md — Build Spec for “Mediadive Clone” (Vanilla JS + Bootstrap 5.3)
 
 > Scope: a single-page prototype that lists media from local JSON files, supports search + one-click sort, and renders a per-media composition view. Visual style follows Bootstrap 5.3 **Dashboard** layout and color cues similar to **SFB1535** website.
 
@@ -29,9 +29,9 @@
 
 ### Layout
 
-* Base the shell on **Bootstrap 5.3 → Examples → Dashboard** (header with brand + search, collapsible sidebar). Reuse its classes and responsive behavior. ([Bootstrap][1])
+* Base the shell on **Bootstrap 5.3 → Examples → Dashboard** (header with brand, collapsible sidebar). Reuse its classes and responsive behavior. ([Bootstrap][1])
 
-### Palette (inspired by SFB1535)
+### Palette (inspired by SFB1535) - **Theme changed to Orange**
 
 Use CSS vars in `:root`:
 
@@ -122,7 +122,7 @@ Columns:
 
 Interactions:
 
-* **Search** (input in header): filters by `id`, `name`, `source`, `description` (includes partial matches; case-insensitive). Debounce 150 ms.
+* **Search**: Each searchable column has a search input that filters the table results instantly (debounced).
 * **One-click sort**: clicking a header toggles asc/desc; only one active sort at a time.
 * **Row hover** and **focus** styles use `--brand-ltblue` background tint for accessibility.
 
@@ -166,7 +166,6 @@ Bootstrap & shell
 
   * Brand: “Mediadive (Prototype)”.
   * Sidebar items: “Media” (active), “About”, “Links”.
-  * Header right: search field (wired to table filter). ([Bootstrap][1])
 
 Data loading
 
@@ -180,8 +179,8 @@ Data loading
 
 Search
 
-* Precompute a `haystack` per row: `${id} ${name} ${source} ${description||""}` lower-cased.
-* On input (debounced 150 ms), filter rows; if empty query, show all.
+* Each searchable column has its own search input.
+* On input (debounced 150 ms), filter rows based on the input value for that column.
 
 Sort
 
@@ -228,12 +227,12 @@ Empty/error states
 
 ```css
 body{ font-family: "Roboto","Helvetica","Arial",sans-serif; }
-.navbar, .sidebar { background: var(--brand-navy); }
+.navbar, .sidebar { background: var(--brand-orange); }
 .navbar .navbar-brand, .navbar .nav-link, .sidebar .nav-link { color: var(--brand-white); }
-.btn-primary, .badge-primary { background: var(--brand-orange); border-color: var(--brand-orange); color:#000; }
+.btn-primary, .badge-primary { background: var(--brand-navy); border-color: var(--brand-navy); color:var(--brand-white); }
 .table-hover tbody tr:hover { background: color-mix(in oklab, var(--brand-ltblue) 20%, white); }
-a { color: var(--brand-navy); }
-a:hover { color: var(--brand-orange); }
+a { color: var(--brand-orange); }
+a:hover { color: var(--brand-navy); }
 ```
 
 (Use the Dashboard example’s structure; only minimal overrides like above.) ([Bootstrap][1])
@@ -242,20 +241,20 @@ a:hover { color: var(--brand-orange); }
 
 ## 9) Deliverables checklist (for the agent)
 
-* [ ] **Scaffold**: copy Bootstrap 5.3 **Dashboard** HTML into `index.html`; include Bootstrap CSS/JS via CDN. ([Bootstrap][1])
-* [ ] **Palette** + font stack injected via `styles.css` (as in §8).
-* [ ] **Router**: hashchange listener; default route.
-* [ ] **Data loader**: fetch three JSONs; build indexes + `descCanonMap`.
-* [ ] **Media table**:
+* [x] **Scaffold**: copy Bootstrap 5.3 **Dashboard** HTML into `index.html`; include Bootstrap CSS/JS via CDN. ([Bootstrap][1])
+* [x] **Palette** + font stack injected via `styles.css` (as in §8).
+* [x] **Router**: hashchange listener; default route.
+* [x] **Data loader**: fetch three JSONs; build indexes + `descCanonMap`.
+* [x] **Media table**:
 
-  * [ ] Render rows; link to `#/media/{canonicalId}`.
-  * [ ] Search input wired (debounce 150 ms).
+  * [x] Render rows; link to `#/media/{canonicalId}`.
+  * [x] Search input wired (debounce 150 ms).
   * [ ] One-click sort with indicators (▲/▼).
-* [ ] **Composition view**:
+* [x] **Composition view**:
 
-  * [ ] Header metadata + external PDF link if `link`.
-  * [ ] Composition table from `compositionById[id]`.
-  * [ ] Missing data notice.
+  * [x] Header metadata + external PDF link if `link`.
+  * [x] Composition table from `compositionById[id]`.
+  * [x] Missing data notice.
   * [ ] Related media (same normalized description).
 * [ ] **States**: loading spinners, empty states, error alerts.
 * [ ] **A11y**: keyboard sorting; focus outline; table captions.
@@ -264,7 +263,7 @@ a:hover { color: var(--brand-orange); }
   * [ ] IDs with letters (e.g., `"1a"`) route and sort correctly.
   * [ ] Duplicate description linking works.
   * [ ] PDFs open in new tab with `rel="noopener"`.
-* [ ] **Packaging**: everything runs from a static server (no build step).
+* [x] **Packaging**: everything runs from a static server (no build step).
 
 ---
 

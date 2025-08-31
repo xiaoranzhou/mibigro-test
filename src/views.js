@@ -1,5 +1,6 @@
 
 import { createTable, applyFilter } from './ui.js';
+import { getIngredientByName } from './state.js';
 
 let filters = {};
 
@@ -49,10 +50,15 @@ export function renderCompositionView(element, medium, composition) {
       { key: 'mmol_l', label: 'mmol/L' },
       { key: 'optional', label: 'Optional' },
     ];
-    const rows = composition.map(c => ({
-      ...c,
-      optional: c.optional ? 'Yes' : 'No',
-    }));
+    const rows = composition.map(c => {
+        const ingredient = getIngredientByName(c.name);
+        const ingredientName = ingredient ? `<strong>${c.name}</strong>` : c.name;
+        return {
+            ...c,
+            name: ingredientName,
+            optional: c.optional ? 'Yes' : 'No',
+        }
+    });
     const table = createTable(headers, rows);
     element.innerHTML = html;
     element.appendChild(table);
@@ -65,6 +71,14 @@ export function renderCompositionView(element, medium, composition) {
 export function renderError(message) {
   const element = document.getElementById('app-root');
   element.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+}
+
+export function renderAbout(element) {
+    element.innerHTML = '<h2>About</h2><p>This is a prototype of the Mediadive application.</p>';
+}
+
+export function renderLinks(element) {
+    element.innerHTML = '<h2>Links</h2><ul><li><a href="https://www.dsmz.de/">DSMZ</a></li></ul>';
 }
 
 function formatPh(min, max) {
