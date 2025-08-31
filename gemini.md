@@ -1,3 +1,4 @@
+
 # gemini.md — Build Spec for “Mediadive Clone” (Vanilla JS + Bootstrap 5.3)
 
 > Scope: a single-page prototype that lists media from local JSON files, supports search + one-click sort, and renders a per-media composition view. Visual style follows Bootstrap 5.3 **Dashboard** layout and color cues similar to **SFB1535** website.
@@ -6,15 +7,23 @@
 
 ## 1) Project goals
 
-* SPA with two hash routes:
+* SPA with multiple hash routes:
 
   * `#/media` (default): searchable/sortable table of all media.
   * `#/media/:id` (composition): details table for one medium.
+  * `#/solutions`: searchable table of all solutions.
+  * `#/ingredients`: searchable table of all ingredients.
+  * `#/about`: about page.
+  * `#/links`: links page.
 * Data sources (local JSON):
 
   * `mediaList.json` — array of media.
   * `medium-Composition.json` — dict keyed by media ID (string keys, e.g., `"1"`, `"1a"`).
   * `solutions.json` — array of stock solutions.
+  * `solutions-composition.json` — dict keyed by solution ID.
+  * `ingredients.json` — array of ingredients.
+  * `ingredients_detail.json` — dict keyed by ingredient ID.
+  * `mediumStrain.json` — dict keyed by medium ID.
 * UX constraints
 
   * Use **Bootstrap 5.3 Dashboard** shell (top navbar + left sidebar), mobile-friendly. ([Bootstrap][1])
@@ -84,6 +93,10 @@ type CompositionDict = {
 };
 
 type Solution = { id:number; name:string; volume:number|null };
+
+type Ingredient = { id: number; name: string; "CAS-RN": string|null; formula: string|null; mass: number|null };
+
+type Strain = { id: number; species: string; ccno: string; growth: number; bacdive_id: number; domain: string };
 ```
 
 Canonicalization rule
@@ -103,6 +116,10 @@ Edge cases
 
   * `#/media` → render table view.
   * `#/media/:id` → render composition view.
+  * `#/solutions` → render solutions table view.
+  * `#/ingredients` → render ingredients table view.
+  * `#/about` → render about page.
+  * `#/links` → render links page.
   * Unknown hash → redirect to `#/media`.
 * Keep scroll position per route if simple (or just reset to top).
 
@@ -129,10 +146,23 @@ Interactions:
 ### B) Composition (`#/media/:id`)
 
 * Show medium header: Name, ID, Source, pH, external PDF link if present.
+* **Show Strains** button to open a modal with strain information.
 * **Ingredients table** with columns: Ingredient, g/L, mmol/L, Optional.
+* Ingredient names are linked to a modal with detailed information.
 * If missing composition: show an alert explaining “No composition data found for this medium”.
 * If this medium is an **alias** (due to duplicate description), show a notice: “This entry duplicates **<canonical name>**; redirecting link in list view.”
 * Optionally list **related media** sharing the same description.
+
+### C) Solutions table (`#/solutions`)
+
+* Columns: ID, Name, Volume.
+* Each searchable column has a search input.
+
+### D) Ingredients table (`#/ingredients`)
+
+* Columns: ID, Name, CAS-RN, Formula, Mass.
+* Each searchable column has a search input.
+* Ingredient names are linked to a modal with detailed information.
 
 ---
 
@@ -145,6 +175,10 @@ Interactions:
     mediaList.json
     medium-Composition.json
     solutions.json
+    solutions-composition.json
+    ingredients.json
+    ingredients_detail.json
+    mediumStrain.json
   /assets
     favicon.svg
     logo.svg
@@ -165,17 +199,18 @@ Bootstrap & shell
 * Start from **Dashboard** example markup; keep the top `navbar` and a collapsible `sidebar`. Replace its placeholder content with:
 
   * Brand: “Mediadive (Prototype)”.
-  * Sidebar items: “Media” (active), “About”, “Links”.
+  * Sidebar items: “Media”, “Solutions”, “Ingredients”, “About”, “Links”.
 
 Data loading
 
-* Fetch all three JSONs in parallel (`Promise.all`) from `/public/data/*`.
+* Fetch all JSONs in parallel (`Promise.all`) from `/public/data/*`.
 * Normalize medium IDs to **strings** (e.g., `String(m.id)`).
 * Build:
 
   * `byId` map for media.
   * `compositionById` from `medium-Composition.json`.
   * `descCanonMap` (description → canonicalId).
+  * `ingredientsByName` map.
 
 Search
 
@@ -202,6 +237,8 @@ Composition view
 * Use a simple striped table.
 * For `optional === 1`, show a muted “(optional)” or a badge.
 * If `g_l` and `mmol_l` are both `null`, leave cells blank.
+* Ingredient names are linked to a modal with detailed information from `ingredients_detail.json`.
+* A “Show Strains” button opens a modal with strain information from `mediumStrain.json`.
 
 Accessibility
 
@@ -244,7 +281,7 @@ a:hover { color: var(--brand-navy); }
 * [x] **Scaffold**: copy Bootstrap 5.3 **Dashboard** HTML into `index.html`; include Bootstrap CSS/JS via CDN. ([Bootstrap][1])
 * [x] **Palette** + font stack injected via `styles.css` (as in §8).
 * [x] **Router**: hashchange listener; default route.
-* [x] **Data loader**: fetch three JSONs; build indexes + `descCanonMap`.
+* [x] **Data loader**: fetch all JSONs; build indexes + `descCanonMap`.
 * [x] **Media table**:
 
   * [x] Render rows; link to `#/media/{canonicalId}`.
@@ -255,7 +292,11 @@ a:hover { color: var(--brand-navy); }
   * [x] Header metadata + external PDF link if `link`.
   * [x] Composition table from `compositionById[id]`.
   * [x] Missing data notice.
-  * [ ] Related media (same normalized description).
+  * [x] Related media (same normalized description).
+  * [x] Ingredient linking to modal with details.
+  * [x] Strain information modal.
+* [x] **Solutions table**.
+* [x] **Ingredients table**.
 * [ ] **States**: loading spinners, empty states, error alerts.
 * [ ] **A11y**: keyboard sorting; focus outline; table captions.
 * [ ] **QA**:
