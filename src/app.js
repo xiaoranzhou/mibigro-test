@@ -1,7 +1,16 @@
-import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients, getIngredientDetails, getStrainsForMedium } from './state.js';
-import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable } from './views.js';
+import { loadData, getMedia, getMedium, getComposition, getSolutions, getSolution, getSolutionComposition, getIngredients, getIngredient, getIngredientDetails, getStrainsForMedium, getAllStrains, getMediaForStrain } from './state.js';
+import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable, renderSolutionCompositionView, renderSolutionJsonView, renderIngredientDetailView, renderStrainsTable, renderStrainDetailView, renderAddMediaView } from './views.js';
 
 const appRoot = document.getElementById('app-root');
+const loadingOverlay = document.getElementById('loading-overlay');
+
+function showLoading() {
+  loadingOverlay.style.display = 'flex';
+}
+
+function hideLoading() {
+  loadingOverlay.style.display = 'none';
+}
 
 function updateSidenav() {
     const hash = window.location.hash || '#/media';
@@ -16,8 +25,10 @@ function updateSidenav() {
 }
 
 async function router() {
+  showLoading();
   const hash = window.location.hash || '#/media';
-  const [path, id] = hash.substring(2).split('/');
+  const parts = hash.substring(2).split('/');
+  const [path, id, extra] = parts;
 
   appRoot.innerHTML = ''; // Clear previous content
   updateSidenav();
@@ -37,11 +48,50 @@ async function router() {
       }
       break;
     case 'solutions':
+      if (id) {
+        if (extra === 'json') {
+            const solution = getSolution(id);
+            if (solution) {
+                const composition = getSolutionComposition(id);
+                renderSolutionJsonView(appRoot, solution, composition);
+            } else {
+                renderError('Solution not found');
+            }
+        } else {
+            const solution = getSolution(id);
+            if (solution) {
+              const composition = getSolutionComposition(id);
+              renderSolutionCompositionView(appRoot, solution, composition);
+            } else {
+              renderError('Solution not found');
+            }
+        }
+      } else {
         renderSolutionsTable(appRoot, getSolutions());
-        break;
+      }
+      break;
     case 'ingredients':
+      if (id) {
+        const ingredient = getIngredient(id);
+        if (ingredient) {
+          const ingredientDetails = getIngredientDetails(id);
+          renderIngredientDetailView(appRoot, ingredient, ingredientDetails);
+        } else {
+          renderError('Ingredient not found');
+        }
+      } else {
         renderIngredientsTable(appRoot, getIngredients());
-        break;
+      }
+      break;
+    case 'strains':
+      if (id) {
+        const strainName = decodeURIComponent(id);
+        const mediaForStrain = getMediaForStrain(strainName);
+        renderStrainDetailView(appRoot, strainName, mediaForStrain);
+      } else {
+        renderStrainsTable(appRoot, getAllStrains());
+      }
+      break;
     case 'about':
         renderAbout(appRoot);
         break;
@@ -51,66 +101,19 @@ async function router() {
     default:
       window.location.hash = '#/media';
   }
+  hideLoading();
 }
 
 async function init() {
+  showLoading();
   await loadData();
   router();
   window.addEventListener('hashchange', router);
+  hideLoading();
+}
 
-  const ingredientModal = document.getElementById('ingredientModal');
-  ingredientModal.addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget;
-    const ingredient = JSON.parse(button.getAttribute('data-ingredient'));
-    const ingredientDetails = getIngredientDetails(ingredient.id);
-
-    const modalTitle = ingredientModal.querySelector('.modal-title');
-    const modalBody = ingredientModal.querySelector('.modal-body');
-    modalTitle.textContent = ingredient.name;
-
-    let tableHtml = '<table class="table">';
-    const details = ingredientDetails || ingredient;
-    for (const key in details) {
-        let value = details[key];
-        if (key === 'ChEBI' && value) {
-            value = `<a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:${value}" target="_blank">${value}</a>`;
-        } else if (key === 'PubChem' && value) {
-            value = `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${value}" target="_blank">${value}</a>`;
-        } else if (Array.isArray(value)) {
-            value = value.join(', ');
-        }
-        tableHtml += `<tr><th scope="row">${key}</th><td>${value !== null ? value : ''}</td></tr>`;
-    }
-    tableHtml += '</table>';
-
-    modalBody.innerHTML = tableHtml;
-  });
-
-  const strainModal = document.getElementById('strainModal');
-  strainModal.addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget;
-    const strains = JSON.parse(button.getAttribute('data-strains'));
-    const modalTitle = strainModal.querySelector('.modal-title');
-    const modalBody = strainModal.querySelector('.modal-body');
-    modalTitle.textContent = 'Strains';
-
-    let tableHtml = '<table class="table">';
-    tableHtml += '<thead><tr><th>ID</th><th>Species</th><th>CCNO</th><th>Growth</th><th>BacDive ID</th><th>Domain</th></tr></thead>';
-    tableHtml += '<tbody>';
-    for (const strain of strains) {
-        tableHtml += `<tr>
-            <td>${strain.id}</td>
-            <td>${strain.species}</td>
-            <td>${strain.ccno}</td>
-            <td>${strain.growth}</td>
-            <td><a href="https://bacdive.dsmz.de/strain/${strain.bacdive_id}" target="_blank">${strain.bacdive_id}</a></td>
-            <td>${strain.domain}</td>
-        </tr>`;
-    }
-    tableHtml += '</tbody></table>';
-
-    modalBody.innerHTML = tableHtml;
-  });
+init();ner('hashchange', router);
+  hideLoading();
 }
 
 init();

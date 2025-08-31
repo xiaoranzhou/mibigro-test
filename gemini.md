@@ -1,4 +1,3 @@
-
 # gemini.md — Build Spec for “Mediadive Clone” (Vanilla JS + Bootstrap 5.3)
 
 > Scope: a single-page prototype that lists media from local JSON files, supports search + one-click sort, and renders a per-media composition view. Visual style follows Bootstrap 5.3 **Dashboard** layout and color cues similar to **SFB1535** website.
@@ -13,6 +12,7 @@
   * `#/media/:id` (composition): details table for one medium.
   * `#/solutions`: searchable table of all solutions.
   * `#/ingredients`: searchable table of all ingredients.
+  * `#/strains`: searchable table of all strains.
   * `#/about`: about page.
   * `#/links`: links page.
 * Data sources (local JSON):
@@ -34,98 +34,7 @@
 
 ---
 
-## 2) Visual system
-
-### Layout
-
-* Base the shell on **Bootstrap 5.3 → Examples → Dashboard** (header with brand, collapsible sidebar). Reuse its classes and responsive behavior. ([Bootstrap][1])
-
-### Palette (inspired by SFB1535) - **Theme changed to Orange**
-
-Use CSS vars in `:root`:
-
-```css
-:root{
-  --brand-white:#ffffff;
-  --brand-navy:#042f64;     /* SFB-like dark blue */
-  --brand-ltblue:#7ac6f6;   /* light accent */
-  --brand-grayblue:#bdd0db; /* soft neutral */
-  --brand-orange:#ff8400;   /* call-to-action */
-}
-```
-
-Rationale:
-
-* SFB1535 site shows white base, orange CTA chips, Roboto font. ([sfb1535.de][2])
-* Complementary community palette reference with the exact hexes above. ([Color Hex][3])
-
-Typography
-
-* Font stack from SFB1535 DOM/CSS: `"Roboto","Helvetica","Arial",sans-serif`. ([sfb1535.de][2])
-
----
-
-## 3) Data model (Type-ish)
-
-```ts
-type Medium = {
-  id: string|number;        // e.g., 1 or "1a"; treat as string internally
-  name: string;
-  complex_medium: 0|1;
-  source: string;           // e.g., "DSMZ"
-  link: string|null;        // PDF link (external)
-  min_pH: number|null;
-  max_pH: number|null;
-  reference: string|null;
-  description: string|null; // may be null or duplicated across items
-};
-
-type CompositionIngredient = {
-  name: string;
-  id: number;               // ingredient ID (not medium ID)
-  g_l: number|null;
-  mmol_l: number|null;
-  optional: 0|1;
-};
-
-type CompositionDict = {
-  [mediumId: string]: CompositionIngredient[]; // keys can be "1", "1a", etc.
-};
-
-type Solution = { id:number; name:string; volume:number|null };
-
-type Ingredient = { id: number; name: string; "CAS-RN": string|null; formula: string|null; mass: number|null };
-
-type Strain = { id: number; species: string; ccno: string; growth: number; bacdive_id: number; domain: string };
-```
-
-Canonicalization rule
-
-* Build a map `desc → firstSeenMediumId` using **trimmed, lower-cased** description; on `#/media`, the **Name** link resolves to that canonical ID.
-
-Edge cases
-
-* `description` may be `null`: skip canonicalization.
-* `medium-Composition.json` may lack a key for some `id`: show an inline warning in the detail page.
-
----
-
-## 4) Routing
-
-* Hash router (no dependencies). Routes:
-
-  * `#/media` → render table view.
-  * `#/media/:id` → render composition view.
-  * `#/solutions` → render solutions table view.
-  * `#/ingredients` → render ingredients table view.
-  * `#/about` → render about page.
-  * `#/links` → render links page.
-  * Unknown hash → redirect to `#/media`.
-* Keep scroll position per route if simple (or just reset to top).
-
----
-
-## 5) Pages
+## 2) Pages
 
 ### A) Media table (`#/media`)
 
@@ -145,10 +54,10 @@ Interactions:
 
 ### B) Composition (`#/media/:id`)
 
-* Show medium header: Name, ID, Source, pH, external PDF link if present.
-* **Show Strains** button to open a modal with strain information.
+* Show medium header in a table: Name, ID, Source, pH, external PDF link if present.
+* **Related Strains** table is displayed if there are any.
 * **Ingredients table** with columns: Ingredient, g/L, mmol/L, Optional.
-* Ingredient names are linked to a modal with detailed information.
+* Ingredient names are linked to the ingredient's detail page (`#/ingredients/:id`).
 * If missing composition: show an alert explaining “No composition data found for this medium”.
 * If this medium is an **alias** (due to duplicate description), show a notice: “This entry duplicates **<canonical name>**; redirecting link in list view.”
 * Optionally list **related media** sharing the same description.
@@ -162,11 +71,16 @@ Interactions:
 
 * Columns: ID, Name, CAS-RN, Formula, Mass.
 * Each searchable column has a search input.
-* Ingredient names are linked to a modal with detailed information.
+* Ingredient names are linked to the ingredient's detail page (`#/ingredients/:id`).
+
+### E) Strains table (`#/strains`)
+
+* Columns: ID, Species, CCNO, Growth, BacDive ID, Domain.
+* Each searchable column has a search input.
 
 ---
 
-## 6) File structure (prototype)
+## 3) File structure (prototype)
 
 ```
 /public
@@ -192,145 +106,55 @@ Interactions:
 
 ---
 
-## 7) Implementation notes
-
-Bootstrap & shell
-
-* Start from **Dashboard** example markup; keep the top `navbar` and a collapsible `sidebar`. Replace its placeholder content with:
-
-  * Brand: “Mediadive (Prototype)”.
-  * Sidebar items: “Media”, “Solutions”, “Ingredients”, “About”, “Links”.
-
-Data loading
-
-* Fetch all JSONs in parallel (`Promise.all`) from `/public/data/*`.
-* Normalize medium IDs to **strings** (e.g., `String(m.id)`).
-* Build:
-
-  * `byId` map for media.
-  * `compositionById` from `medium-Composition.json`.
-  * `descCanonMap` (description → canonicalId).
-  * `ingredientsByName` map.
-
-Search
-
-* Each searchable column has its own search input.
-* On input (debounced 150 ms), filter rows based on the input value for that column.
-
-Sort
-
-* “ID” column sort:
-
-  * Parse leading integer if present; compare numerically; tie-break with full string.
-* “Name” / “Source”: localeCompare with `sensitivity:"base"`.
-* “pH”: compare by `(min??max??∞, max??min??∞)`.
-
-Linking rule (duplicate descriptions)
-
-* When building the table row for medium `m`, compute:
-
-  * `targetId = descCanonMap[normalized(m.description)] ?? m.id`.
-* Render `<a href="#/media/${targetId}">m.name</a>`.
-
-Composition view
-
-* Use a simple striped table.
-* For `optional === 1`, show a muted “(optional)” or a badge.
-* If `g_l` and `mmol_l` are both `null`, leave cells blank.
-* Ingredient names are linked to a modal with detailed information from `ingredients_detail.json`.
-* A “Show Strains” button opens a modal with strain information from `mediumStrain.json`.
-
-Accessibility
-
-* Ensure **color contrast**: brand navy on white, orange for accents (buttons and badges) with dark text where needed. (Palette anchored by #042f64 / #ff8400 / #ffffff per SFB-like scheme.) ([Color Hex][3])
-* Keyboard:
-
-  * Header cells are `button` elements (or have `tabindex="0"` + key handlers) for sorting.
-  * Focus outlines preserved.
-
-Performance
-
-* Render table rows with `DocumentFragment`.
-* For large lists, consider paging (client-side) but **not required** for prototype.
-
-Empty/error states
-
-* If a fetch fails, show a dismissible `alert-danger` with a retry button.
-* If search yields zero rows, show an `alert-warning` inside the table container.
-
----
-
-## 8) Styling hooks (Bootstrap 5.3 overrides)
-
-```css
-body{ font-family: "Roboto","Helvetica","Arial",sans-serif; }
-.navbar, .sidebar { background: var(--brand-orange); }
-.navbar .navbar-brand, .navbar .nav-link, .sidebar .nav-link { color: var(--brand-white); }
-.btn-primary, .badge-primary { background: var(--brand-navy); border-color: var(--brand-navy); color:var(--brand-white); }
-.table-hover tbody tr:hover { background: color-mix(in oklab, var(--brand-ltblue) 20%, white); }
-a { color: var(--brand-orange); }
-a:hover { color: var(--brand-navy); }
-```
-
-(Use the Dashboard example’s structure; only minimal overrides like above.) ([Bootstrap][1])
-
----
-
-## 9) Deliverables checklist (for the agent)
-
-* [x] **Scaffold**: copy Bootstrap 5.3 **Dashboard** HTML into `index.html`; include Bootstrap CSS/JS via CDN. ([Bootstrap][1])
-* [x] **Palette** + font stack injected via `styles.css` (as in §8).
-* [x] **Router**: hashchange listener; default route.
-* [x] **Data loader**: fetch all JSONs; build indexes + `descCanonMap`.
-* [x] **Media table**:
-
-  * [x] Render rows; link to `#/media/{canonicalId}`.
-  * [x] Search input wired (debounce 150 ms).
-  * [ ] One-click sort with indicators (▲/▼).
-* [x] **Composition view**:
-
-  * [x] Header metadata + external PDF link if `link`.
-  * [x] Composition table from `compositionById[id]`.
-  * [x] Missing data notice.
-  * [x] Related media (same normalized description).
-  * [x] Ingredient linking to modal with details.
-  * [x] Strain information modal.
-* [x] **Solutions table**.
-* [x] **Ingredients table**.
-* [ ] **States**: loading spinners, empty states, error alerts.
-* [ ] **A11y**: keyboard sorting; focus outline; table captions.
-* [ ] **QA**:
-
-  * [ ] IDs with letters (e.g., `"1a"`) route and sort correctly.
-  * [ ] Duplicate description linking works.
-  * [ ] PDFs open in new tab with `rel="noopener"`.
-* [x] **Packaging**: everything runs from a static server (no build step).
-
----
-
-## 10) References captured from the web
+## 4) References captured from the web
 
 * Bootstrap 5.3 **Dashboard** example (layout & structure). ([Bootstrap][1])
 * SFB1535 **MibiNet DB** site (font stack evidence; orange CTA chips). ([sfb1535.de][2])
 * SFB-like color palette hexes (#ff8400, #042f64, #7ac6f6, #bdd0db, #ffffff). ([Color Hex][3])
 
----
-
-## 11) Nice-to-have (optional)
-
-* Sticky table header on scroll (Bootstrap utility + small CSS).
-* Client-side CSV export of current filtered/sorted view.
-* Quick filters: source = DSMZ; complex = Yes/No.
-* Small “Solutions” drawer listing `solutions.json` entries; link any ingredient names that match a solution name.
-
----
-
-**Notes**
-
-* Treat *all* medium IDs as strings to avoid key mismatches between `mediaList.json` and `medium-Composition.json` (e.g., `"1a"`).
-* Where `min_pH === max_pH`, render a single value (e.g., “7.0”) to match user data examples.
-* Avoid external libraries beyond Bootstrap; keep JS modular and readable.
-
 [1]: https://getbootstrap.com/docs/5.3/examples/dashboard/ "Dashboard Template · Bootstrap v5.3"
 [2]: https://www.sfb1535.de/ "MibiNet DB"
 [3]: https://www.color-hex.com/color-palette/107002?utm_source=chatgpt.com "SFB Color Palette"
+
+---
+
+## 5) Future Development Plan
+
+This section outlines the plan to evolve the prototype into a full-featured, secure data management application.
+
+### Phase 1: Backend Foundation (FastAPI & PostgreSQL)
+1.  **Project Scaffolding:** Set up a new `backend` directory for a FastAPI application.
+2.  **Database Schema:** Design and create the PostgreSQL database schema for all data, including a `users` table and a `published` flag for media.
+3.  **Authentication & Authorization:** Implement JWT-based user authentication to secure data modification endpoints.
+4.  **Core API Endpoints:** Develop public (read-only, published data) and admin (read/write) API endpoints for media, ingredients, and solutions.
+
+### Phase 2: Straightforward Frontend UI for Data Stewards
+1.  **Login Page:** Create a simple login page.
+2.  **Admin Dashboard:** A secure section (`#/admin`) for data management, showing all data (drafts and published) with edit/publish/delete controls.
+3.  **Unified "Add/Edit" Interface:** A single, intuitive UI for adding and editing all data types.
+
+### Phase 3: Full Integration
+1.  **Connect Frontend to Backend:** Update the frontend to fetch all data from the backend API.
+2.  **Authenticated Operations:** The admin UI will send the authentication token with all secure requests.
+
+---
+
+## 6) Changelog
+
+### 2025-08-31
+*   **Medium Composition View (`/media/:id`):**
+    *   The medium's descriptive information (ID, Source, pH) is now displayed in a table for better readability.
+    *   Fixed a bug where the composition table was being overwritten by the "Related Strains" table.
+    *   The "Related Strains" are now displayed in a table directly on the page instead of in a modal.
+    *   Ingredient names in the composition table now link to their respective detail pages (`#/ingredients/:id`) instead of a modal.
+*   **Ingredients List View (`/ingredients`):**
+    *   Ingredient names in the main list now also link to their detail pages, consistent with the composition view.gelog
+
+### 2025-08-31
+*   **Medium Composition View (`/media/:id`):**
+    *   The medium's descriptive information (ID, Source, pH) is now displayed in a table for better readability.
+    *   Fixed a bug where the composition table was being overwritten by the "Related Strains" table.
+    *   The "Related Strains" are now displayed in a table directly on the page instead of in a modal.
+    *   Ingredient names in the composition table now link to their respective detail pages (`#/ingredients/:id`) instead of a modal.
+*   **Ingredients List View (`/ingredients`):**
+    *   Ingredient names in the main list now also link to their detail pages, consistent with the composition view.

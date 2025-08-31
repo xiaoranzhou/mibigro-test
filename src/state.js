@@ -8,13 +8,14 @@ const state = {
   ingredients: [],
   ingredientsDetail: {},
   mediumStrains: {},
+  microbeToMedia: {},
   canonMap: new Map(),
   ingredientsByName: new Map(),
 };
 
 async function loadData() {
   try {
-    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes] = await Promise.all([
+    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes, microbeToMediaRes] = await Promise.all([
       fetch('../public/data/mediaList.json'),
       fetch('../public/data/medium-Composition.json'),
       fetch('../public/data/solutions.json'),
@@ -22,9 +23,10 @@ async function loadData() {
       fetch('../public/data/solutions-Composition.json'),
       fetch('../public/data/ingredients_detail.json'),
       fetch('../public/data/mediumStrain.json'),
+      fetch('../public/data/microbe_to_media.json'),
     ]);
 
-    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok) {
+    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok || !microbeToMediaRes.ok) {
       throw new Error('Failed to load data');
     }
 
@@ -35,6 +37,7 @@ async function loadData() {
     state.solutionsComposition = await solutionsCompositionRes.json();
     state.ingredientsDetail = await ingredientsDetailRes.json();
     state.mediumStrains = await mediumStrainsRes.json();
+    state.microbeToMedia = await microbeToMediaRes.json();
 
     buildCanonMap();
     buildIngredientsMap();
@@ -89,12 +92,39 @@ export function getStrainsForMedium(mediumId) {
     return state.mediumStrains[mediumId];
 }
 
+export function getSolution(id) {
+  return state.solutions.find(s => String(s.id) === String(id));
+}
+
+export function getSolutionComposition(id) {
+  return state.solutionsComposition[id];
+}
+
 export function getSolutions() {
     return state.solutions;
 }
 
+export function getIngredient(id) {
+  return state.ingredients.find(i => String(i.id) === String(id));
+}
+
 export function getIngredients() {
     return state.ingredients;
+}
+
+export function getMicrobeToMedia() {
+    return state.microbeToMedia;
+}
+
+export function getAllStrains() {
+    return Object.keys(state.microbeToMedia);
+}
+
+export function getMediaForStrain(strainName) {
+    const mediaIds = state.microbeToMedia[strainName] || [];
+    // Filter out duplicate media IDs and map them to actual media objects
+    const uniqueMediaIds = [...new Set(mediaIds)];
+    return uniqueMediaIds.map(id => getMedium(id)).filter(Boolean);
 }
 
 export { loadData };
