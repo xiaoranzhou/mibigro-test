@@ -52,7 +52,9 @@ export function renderCompositionView(element, medium, composition) {
     ];
     const rows = composition.map(c => {
         const ingredient = getIngredientByName(c.name);
-        const ingredientName = ingredient ? `<strong>${c.name}</strong>` : c.name;
+        const ingredientName = ingredient ?
+            `<a href="#" data-bs-toggle="modal" data-bs-target="#ingredientModal" data-ingredient='${JSON.stringify(ingredient)}'>${c.name}</a>` :
+            c.name;
         return {
             ...c,
             name: ingredientName,
@@ -62,6 +64,7 @@ export function renderCompositionView(element, medium, composition) {
     const table = createTable(headers, rows);
     element.innerHTML = html;
     element.appendChild(table);
+
   } else {
     html += '<div class="alert alert-warning">No composition data found for this medium.</div>';
     element.innerHTML = html;

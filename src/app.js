@@ -1,4 +1,3 @@
-
 import { loadData, getMedia, getMedium, getComposition } from './state.js';
 import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks } from './views.js';
 
@@ -52,6 +51,16 @@ async function init() {
   await loadData();
   router();
   window.addEventListener('hashchange', router);
+
+  const ingredientModal = document.getElementById('ingredientModal');
+  ingredientModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const ingredient = JSON.parse(button.getAttribute('data-ingredient'));
+    const modalTitle = ingredientModal.querySelector('.modal-title');
+    const modalBody = ingredientModal.querySelector('.modal-body');
+    modalTitle.textContent = ingredient.name;
+    modalBody.innerHTML = `<pre>${JSON.stringify(ingredient, null, 2)}</pre>`;
+  });
 }
 
 init();
