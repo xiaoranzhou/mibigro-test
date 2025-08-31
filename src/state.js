@@ -1,4 +1,3 @@
-
 import { renderError } from './views.js';
 
 const state = {
@@ -8,22 +7,24 @@ const state = {
   solutionsComposition: {},
   ingredients: [],
   ingredientsDetail: {},
+  mediumStrains: {},
   canonMap: new Map(),
   ingredientsByName: new Map(),
 };
 
 async function loadData() {
   try {
-    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes] = await Promise.all([
+    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes] = await Promise.all([
       fetch('../public/data/mediaList.json'),
       fetch('../public/data/medium-Composition.json'),
       fetch('../public/data/solutions.json'),
       fetch('../public/data/ingredients.json'),
       fetch('../public/data/solutions-Composition.json'),
       fetch('../public/data/ingredients_detail.json'),
+      fetch('../public/data/mediumStrain.json'),
     ]);
 
-    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok) {
+    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok) {
       throw new Error('Failed to load data');
     }
 
@@ -33,6 +34,7 @@ async function loadData() {
     state.ingredients = await ingredientsRes.json();
     state.solutionsComposition = await solutionsCompositionRes.json();
     state.ingredientsDetail = await ingredientsDetailRes.json();
+    state.mediumStrains = await mediumStrainsRes.json();
 
     buildCanonMap();
     buildIngredientsMap();
@@ -81,6 +83,10 @@ export function getIngredientByName(name) {
 
 export function getIngredientDetails(id) {
     return state.ingredientsDetail[id];
+}
+
+export function getStrainsForMedium(mediumId) {
+    return state.mediumStrains[mediumId];
 }
 
 export function getSolutions() {

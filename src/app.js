@@ -1,5 +1,4 @@
-
-import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients, getIngredientDetails } from './state.js';
+import { loadData, getMedia, getMedium, getComposition, getSolutions, getIngredients, getIngredientDetails, getStrainsForMedium } from './state.js';
 import { renderMediaTable, renderCompositionView, renderError, renderAbout, renderLinks, renderSolutionsTable, renderIngredientsTable } from './views.js';
 
 const appRoot = document.getElementById('app-root');
@@ -83,6 +82,32 @@ async function init() {
         tableHtml += `<tr><th scope="row">${key}</th><td>${value !== null ? value : ''}</td></tr>`;
     }
     tableHtml += '</table>';
+
+    modalBody.innerHTML = tableHtml;
+  });
+
+  const strainModal = document.getElementById('strainModal');
+  strainModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const strains = JSON.parse(button.getAttribute('data-strains'));
+    const modalTitle = strainModal.querySelector('.modal-title');
+    const modalBody = strainModal.querySelector('.modal-body');
+    modalTitle.textContent = 'Strains';
+
+    let tableHtml = '<table class="table">';
+    tableHtml += '<thead><tr><th>ID</th><th>Species</th><th>CCNO</th><th>Growth</th><th>BacDive ID</th><th>Domain</th></tr></thead>';
+    tableHtml += '<tbody>';
+    for (const strain of strains) {
+        tableHtml += `<tr>
+            <td>${strain.id}</td>
+            <td>${strain.species}</td>
+            <td>${strain.ccno}</td>
+            <td>${strain.growth}</td>
+            <td><a href="https://bacdive.dsmz.de/strain/${strain.bacdive_id}" target="_blank">${strain.bacdive_id}</a></td>
+            <td>${strain.domain}</td>
+        </tr>`;
+    }
+    tableHtml += '</tbody></table>';
 
     modalBody.innerHTML = tableHtml;
   });

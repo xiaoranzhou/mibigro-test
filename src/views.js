@@ -1,6 +1,5 @@
-
 import { createTable, applyFilter } from './ui.js';
-import { getIngredientByName } from './state.js';
+import { getIngredientByName, getStrainsForMedium } from './state.js';
 
 let filters = {};
 
@@ -31,9 +30,15 @@ export function renderMediaTable(element, media) {
 
 export function renderCompositionView(element, medium, composition) {
   const { name, id, source, min_pH, max_pH, link } = medium;
+  const strains = getStrainsForMedium(id);
 
   let html = `
-    <h2>${name}</h2>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">${name}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            ${strains ? `<button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#strainModal" data-strains='${JSON.stringify(strains)}'>Show Strains</button>` : ''}
+        </div>
+    </div>
     <p><strong>ID:</strong> ${id}</p>
     <p><strong>Source:</strong> ${source}</p>
     <p><strong>pH:</strong> ${formatPh(min_pH, max_pH)}</p>
