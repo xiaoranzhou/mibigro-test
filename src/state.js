@@ -16,14 +16,14 @@ const state = {
 async function loadData() {
   try {
     const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes, microbeToMediaRes] = await Promise.all([
-      fetch('../public/data/mediaList.json'),
-      fetch('../public/data/medium-Composition.json'),
-      fetch('../public/data/solutions.json'),
-      fetch('../public/data/ingredients.json'),
-      fetch('../public/data/solutions-Composition.json'),
-      fetch('../public/data/ingredients_detail.json'),
-      fetch('../public/data/mediumStrain.json'),
-      fetch('../public/data/microbe_to_media.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/mediaList.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/medium-Composition.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/solutions.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/ingredients.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/solutions-Composition.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/ingredients_detail.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/mediumStrain.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/microbe_to_media.json'),
     ]);
 
     if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok || !microbeToMediaRes.ok) {
