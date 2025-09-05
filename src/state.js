@@ -9,13 +9,14 @@ const state = {
   ingredientsDetail: {},
   mediumStrains: {},
   microbeToMedia: {},
+  mediumRecipe: {},
   canonMap: new Map(),
   ingredientsByName: new Map(),
 };
 
 async function loadData() {
   try {
-    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes, microbeToMediaRes] = await Promise.all([
+    const [mediaRes, compositionRes, solutionsRes, ingredientsRes, solutionsCompositionRes, ingredientsDetailRes, mediumStrainsRes, microbeToMediaRes, mediumRecipeRes] = await Promise.all([
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/mediaList.json'),
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/medium-Composition.json'),
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/solutions.json'),
@@ -24,9 +25,10 @@ async function loadData() {
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/ingredients_detail.json'),
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/mediumStrain.json'),
       fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/microbe_to_media.json'),
+      fetch('https://raw.githubusercontent.com/xiaoranzhou/mibigro-test/refs/heads/main/public/data/mediumRecipe.json'),
     ]);
 
-    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok || !microbeToMediaRes.ok) {
+    if (!mediaRes.ok || !compositionRes.ok || !solutionsRes.ok || !ingredientsRes.ok || !solutionsCompositionRes.ok || !ingredientsDetailRes.ok || !mediumStrainsRes.ok || !microbeToMediaRes.ok || !mediumRecipeRes.ok) {
       throw new Error('Failed to load data');
     }
 
@@ -38,6 +40,7 @@ async function loadData() {
     state.ingredientsDetail = await ingredientsDetailRes.json();
     state.mediumStrains = await mediumStrainsRes.json();
     state.microbeToMedia = await microbeToMediaRes.json();
+    state.mediumRecipe = await mediumRecipeRes.json();
 
     buildCanonMap();
     buildIngredientsMap();
@@ -78,6 +81,10 @@ export function getMedium(id) {
 
 export function getComposition(id) {
   return state.composition[id];
+}
+
+export function getMediumRecipe(id) {
+  return state.mediumRecipe[id];
 }
 
 export function getIngredientByName(name) {

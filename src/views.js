@@ -1,5 +1,5 @@
 import { createTable, applyFilter } from './ui.js';
-import { getIngredientByName, getStrainsForMedium, getMediaForStrain, getMedium } from './state.js';
+import { getIngredientByName, getStrainsForMedium, getMediaForStrain, getMedium, getMediumRecipe, getSolution, getSolutionComposition } from './state.js';
 
 let filters = {};
 
@@ -50,7 +50,52 @@ export function renderCompositionView(element, medium, composition) {
   html += `</tbody></table>`;
   element.innerHTML = html;
 
+  const mediumRecipe = getMediumRecipe(id);
+
+  if (mediumRecipe && mediumRecipe.solutions) {
+    mediumRecipe.solutions.forEach(solution => {
+        element.insertAdjacentHTML('beforeend', `<h3 class="mt-4">${solution.name}</h3>`);
+        if (solution.recipe) {
+            const recipeHeaders = [
+                { key: 'ingredient', label: 'Ingredient' },
+                { key: 'amount', label: 'Amount' },
+                { key: 'unit', label: 'Unit' },
+                { key: 'g_l', label: 'g/L' },
+            ];
+            const recipeRows = solution.recipe.map(item => {
+                let componentDisplay;
+                if (item.compound) {
+                    const ingredient = getIngredientByName(item.compound);
+                    if (ingredient) {
+                        componentDisplay = `<a href="#/ingredients/${ingredient.id}">${item.compound}</a>`;
+                    } else {
+                        componentDisplay = item.compound;
+                    }
+                } else if (item.solution) {
+                    componentDisplay = `<a href="#/solutions/${item.solution_id}">${item.solution}</a>`;
+                }
+
+                return {
+                    ingredient: componentDisplay,
+                    amount: item.amount,
+                    unit: item.unit,
+                    g_l: item.g_l,
+                };
+            });
+            const recipeTable = createTable(recipeHeaders, recipeRows);
+            element.appendChild(recipeTable);
+        }
+
+        if (solution.steps) {
+            element.insertAdjacentHTML('beforeend', '<h4 class="mt-3">Steps</h4>');
+            const stepsList = solution.steps.map(step => `<li>${step.step}</li>`).join('');
+            element.insertAdjacentHTML('beforeend', `<ol>${stepsList}</ol>`);
+        }
+    });
+  }
+
   if (composition) {
+    element.insertAdjacentHTML('beforeend', '<h3 class="mt-4">Final Composition</h3>');
     const headers = [
       { key: 'name', label: 'Ingredient' },
       { key: 'g_l', label: 'g/L' },
@@ -58,10 +103,13 @@ export function renderCompositionView(element, medium, composition) {
       { key: 'optional', label: 'Optional' },
     ];
     const rows = composition.map(c => {
-        const ingredient = getIngredientByName(c.name);
-        const ingredientName = ingredient ?
-            `<a href="#/ingredients/${ingredient.id}">${c.name}</a>` :
-            c.name;
+        let ingredientName = c.name;
+        if (c.name) {
+            const ingredient = getIngredientByName(c.name);
+            if (ingredient) {
+                ingredientName = `<a href="#/ingredients/${ingredient.id}">${c.name}</a>`;
+            }
+        }
         return {
             ...c,
             name: ingredientName,
@@ -71,7 +119,7 @@ export function renderCompositionView(element, medium, composition) {
     const table = createTable(headers, rows);
     element.appendChild(table);
 
-  } else {
+  } else if (!mediumRecipe) {
     element.insertAdjacentHTML('beforeend', '<div class="alert alert-warning">No composition data found for this medium.</div>');
   }
 
