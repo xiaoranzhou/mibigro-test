@@ -1,7 +1,7 @@
-# gemini.md — Build Spec for “Mediadive Clone” (Vanilla JS + Bootstrap 5.3)
+# gemini.md — Build Specs for MibiGro (Vanilla JS + Bootstrap 5.3)
 
-> Scope: a single-page prototype that lists media from local JSON files, supports search + one-click sort, and renders a per-media composition view. Visual style follows Bootstrap 5.3 **Dashboard** layout and color cues similar to **SFB1535** website.
-
+> Scope: a single-page prototype that lists media from local JSON files, supports search + one-click sort, and renders a per-media composition view. Data sources: mediadive https://mediadive.dsmz.de/ and https://www.sfb1535.de/
+ 
 ---
 
 ## 1) Project goals
@@ -26,9 +26,8 @@
   * `mediumStrain.json` — dict keyed by medium ID.
 * UX constraints
 
-  * Use **Bootstrap 5.3 Dashboard** shell (top navbar + left sidebar), mobile-friendly. ([Bootstrap][1])
-  * Color/feel “similar to” **SFB1535**: white base, dark navy, light blue accents, orange CTA; primary font Roboto/Helvetica/Arial per their site. Suggested palette below. ([sfb1535.de][2], [Color Hex][3])
-  * No frameworks; **vanilla JS** only.
+  * Use **Bootstrap 5.3 Dashboard** : done
+  * No frameworks; **vanilla JS** only: done
   * One-click column sort; instant search (client-side, debounced).
   * If one medium’s **description text duplicates** another medium’s description, the **Name** link should point to the **canonical** medium’s composition page (not its own ID).
 
@@ -43,7 +42,7 @@ Columns:
 1. **ID** (sortable; alphanumeric sort: numbers first by numeric value, then lexicographic).
 2. **Name** (link to composition; link target is **canonical** ID if description duplicates).
 3. **Source** (text).
-4. **pH** (compact “min–max”, or single value when equal; handle nulls).
+4. **pH** (keep “min–max”, or single value when equal; handle nulls).
 5. **Complex** (badge: Yes/No).
 
 Interactions:
@@ -108,10 +107,7 @@ Interactions:
 
 ## 4) References captured from the web
 
-* Bootstrap 5.3 **Dashboard** example (layout & structure). ([Bootstrap][1])
-* SFB1535 **MibiNet DB** site (font stack evidence; orange CTA chips). ([sfb1535.de][2])
-* SFB-like color palette hexes (#ff8400, #042f64, #7ac6f6, #bdd0db, #ffffff). ([Color Hex][3])
+* Bootstrap 5.3 **Dashboard** example (layout & structure). ([Bootstrap])
 
-[1]: https://getbootstrap.com/docs/5.3/examples/dashboard/ "Dashboard Template · Bootstrap v5.3"
-[2]: https://www.sfb1535.de/ "MibiNet DB"
-[3]: https://www.color-hex.com/color-palette/107002?utm_source=chatgpt.com "SFB Color Palette"
+
+
